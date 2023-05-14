@@ -11,6 +11,10 @@
                 name: httpd
                 state: started
                 enabled: yes
+      - name: copy index file for website deployment
+        copy:
+            src: index.html
+            dest: /var/www/html/index.html 
 - name: dbserver setup
   hosts: dbsrvgrp
   become: yes
