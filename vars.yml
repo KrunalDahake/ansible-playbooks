@@ -2,7 +2,15 @@
 - name: dbserver setup
   hosts: dbsrvgrp
   become: yes
+  vars:
+      dbname: var_storage
+      dbuser: krunal  
+      dbpass: 1234
   tasks:
+        - debug:
+              var: dbname
+        - debug: 
+              msg: "this is the value of dbuser {{dbuser}}"
         - name: install maridb on centos
           yum: 
               name: mariadb-server
@@ -21,12 +29,12 @@
 
         - name: Create a new database with name 'accounts'
           mysql_db:
-                  name: accounts
+                  name: "{{dbname}}"
                   state: present
 
         - name: Create database user with name 'admin'
           mysql_user:
-                    name: admin
-                    password: 12345
+                    name: "{{dbuser}}"
+                    password: "{{dbpass}}"
                     priv: '*.*:ALL'
                     state: present          
