@@ -1,0 +1,15 @@
+- name: this playbook for all hosts
+  hosts: all
+  become: yes
+  vars: 
+      uname: shantha
+      cmnt: this user added by playbook
+  tasks:
+        - user: 
+            name: "{{uname}}"
+            comment: "{{cmnt}}"
+          register: userout  
+        - debug:
+              var: userout.name 
+        - debug:
+              var: userout.comment
