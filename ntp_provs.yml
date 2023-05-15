@@ -1,0 +1,29 @@
+- name: provisioning all the servers with ntp package
+  hosts: all
+  become: yes
+  tasks:
+        - name: install ntp package on CentOS
+          yum:
+              name: ntp
+              state: present
+          when: ansible_distribution == "CentOS"
+
+        - name: install ntp package on Ubuntu
+          apt:
+              name: ntp
+              state: present
+          when: ansible_distribution == "Ubuntu"
+
+        - name: start and enable ntp package on CentOS
+          service:
+              name: ntpd
+              state: started
+              enabled: yes
+          when: ansible_os_family ==  "RedHat"
+
+        - name: start and enable ntp service on ubuntu
+          service:
+                  name: ntp
+                  state: started
+                  enabled: yes
+          when: ansible_os_family == "Debian"            
