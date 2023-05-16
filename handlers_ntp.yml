@@ -1,0 +1,92 @@
+- name: provisioning all the servers with packages
+  hosts: all
+  become: yes
+  tasks:
+        - name: install packages on CentOS
+          yum:
+              name: "{{item}}"
+              state: present
+          when: ansible_distribution == "CentOS"
+          loop:
+              - ntp
+              - wget
+              - zip
+              - unzip
+
+        - name: install ntp package on Ubuntu
+          apt:
+              name: "{{item}}"
+              state: present
+          when: ansible_distribution == "Ubuntu"
+          loop: "{{package_var}}"
+
+        - name: copy the contents into banner file
+          copy: 
+              content: "This {{ansible_distribution}} server is managed by Ansible, so don't need to do anything manually. \n"
+              dest: /etc/motd          
+
+        - name: start and enable ntp package on CentOS
+          service:
+              name: ntpd
+              state: started
+              enabled: yes
+          when: ansible_os_family ==  "RedHat"
+
+        - name: start and enable ntp service on ubuntu
+          service:
+                  name: ntp
+                  state: started
+                  enabled: yes
+          when: ansible_os_family == "Debian"
+
+        - name: adding group into servers
+          group:
+                name: devops
+                state: present
+
+        - name: adding users into the servers
+          user:
+              name: "{{item}}"
+              state: present
+              groups: devops
+          loop: "{{username}}"
+
+        - name: create dir for dev
+          file:
+                path: /opt/devtest
+                state: directory
+                mode: 0755  
+
+        - name: deployed file into servers
+          copy:
+                src: files/site.txt
+                dest: /opt/devtest
+          
+        - name: copy the ntp.conf file in the form of template into remote RedHat family servers
+          template:
+                  src: ./ntp_RedHat.conf.j2
+                  dest: /etc/ntp.conf
+          when: ansible_os_family == "RedHat"
+          notify: after conf file changes CentOS servers needs to be  restart
+
+        - name: copy the ntp.conf file in the form of template into remote Debian family servers
+          template:
+                  src: ./ntp_Debian.conf.j2
+                  dest: /etc/ntp.conf
+          when: ansible_os_family == "Debian"
+          notify: after conf file changes Ubuntu servers needs to be  restart
+
+  handlers:
+        - name: after conf file changes CentOS servers needs to be  restart
+          service:
+                  name: ntpd
+                  state: restarted
+                  enabled: yes
+          when: ansible_ditribution == "CentOS"
+
+        - name: after conf file changes Ubuntu servers needs to be  restart
+          service:
+                  name: ntp
+                  state: restarted
+                  enabled: yes
+          when: ansible_ditribution == "Ubuntu"        
