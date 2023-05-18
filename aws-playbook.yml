@@ -1,0 +1,40 @@
+
+- name: create key-pair
+  hosts: localhost
+  gather_facts: False
+  tasks:
+      - name: create aws ec2 key-pair
+        ec2_key:
+            name: testing
+            region: ap-south-1
+        register: keyout
+
+      #- name: print the key in json format
+       # debug: 
+         #   var: keyout
+
+      - name: copy the key into control machine
+        copy:
+            content: "{{keyout.key.private_key}}"
+            dest: /home/roshanfuse1998/aws/ec2-login-key.pem
+
+      - name: create ec2-instance
+        ec2:
+          key_name: testing
+          instance_type: t2.micro
+          image: ami-02eb7a4783e7e9317
+          region: ap-south-1
+          wait: yes
+          instance_tags:
+                  Name: database
+                  dbtype: postgres
+          exact_count: 1
+          count_tag:
+                  Name: database
+                  dbtype: postgres
+          
+      
+
+
+
+

@@ -55,11 +55,11 @@
           service:
                   name: ntpd
                   state: restarted
-          when: ansible_ditribution == "CentOS"
+          when: ansible_distribution == "CentOS"
 
         - name: after conf file changes Ubuntu servers needs to be  restart
           service:
                   name: ntp
                   state: restarted
-          when: ansible_ditribution == "Ubuntu"
+          when: ansible_distribution == "Ubuntu"
           
